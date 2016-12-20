@@ -4,9 +4,11 @@
   "description": "A monorepo manager for NPM+Git libraries.",
   "preferGlobal": true,
   "main": "robonaut.js",
-  "bin":  { "robonaut": "robonaut.js" },
+  "bin": {
+    "robonaut": "robonaut.js"
+  },
   "scripts": {
-  	"start": "node robonaut.js",
+    "start": "node robonaut.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/f1lt3r/robotnaut/issues"
   },
-  "homepage": "https://github.com/f1lt3r/robotnaut#readme"
+  "homepage": "https://github.com/f1lt3r/robotnaut#readme",
+  "devDependencies": {
+    "xo": "^0.17.1"
+  }
 }
