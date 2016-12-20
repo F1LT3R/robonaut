@@ -1,0 +1,32 @@
+{
+  "name": "robonaut",
+  "version": "1.0.0-alpha",
+  "description": "A monorepo manager for NPM+Git libraries.",
+  "preferGlobal": true,
+  "main": "robonaut.js",
+  "bin":  { "robonaut": "robonaut.js" },
+  "scripts": {
+  	"start": "node robonaut.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/f1lt3r/robotnaut.git"
+  },
+  "keywords": [
+    "monorepo",
+    "git",
+    "npm",
+    "node",
+    "package",
+    "manage",
+    "project",
+    "ecosystem"
+  ],
+  "author": "f1lt3r",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/f1lt3r/robotnaut/issues"
+  },
+  "homepage": "https://github.com/f1lt3r/robotnaut#readme"
+}
