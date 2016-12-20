@@ -127,23 +127,23 @@ const init = () => {
 	}
 };
 
-const skyjack = deps => {
+const glom = deps => {
 	const roboDeps = deps[0].split(',');
 
-	log(`skyjack: ${JSON.stringify(roboDeps)}`);
+	log(`glom: ${JSON.stringify(roboDeps)}`);
 
 	const pkg = getPkg();
 
 	let depsAdded = 0;
 
 	if (!Reflect.has(pkg, 'data') || !Reflect.has(pkg.data, 'robonautDeps')) {
-		throw log(`skyjack: failed, no robonautDeps in package (try 'robonaut init')`);
+		throw log(`glom: failed, no robonautDeps in package (try 'robonaut init')`);
 	}
 
 	for (dep of roboDeps) {
 		if (pkg.data.robonautDeps.indexOf(dep) === -1) {
 			pkg.data.robonautDeps.push(dep);
-			log(`skyjack: '${chalk.underline(dep)}' has been skyjacked`);
+			log(`glom: '${chalk.underline(dep)}' has been glomed`);
 			depsAdded += 1;
 		}
 	}
@@ -151,7 +151,7 @@ const skyjack = deps => {
 	if (depsAdded > 0) {
 		saveJson(pkg.path, pkg.data);
 	} else {
-		log(`skyjack: no new deps added`);
+		log(`glom: no new deps added`);
 	}
 };
 
@@ -176,9 +176,7 @@ const assemble = () => {
 	const depStack = {};
 
 	const logAssembleResults = () => {
-		// log(chalk.yellow.underline('ASSEMBLED...'));
 		log(`assemble: ${chalk.cyan('ALL PACKAGES ASSEMBLED OK ✔  ')}`);
-		// spawnNpmInstall(def);
 
 		log('🏁  ' + chalk.yellow.underline('ASSEMBLED...'));
 		for (name of robonautDeps) {
@@ -292,7 +290,126 @@ const assemble = () => {
 	fetchPackages();
 };
 
-const crosslink = props => {
+const yoke = props => {
+	const pkg = getPkg();
+
+	const deps = pkg.data.robonautDeps;
+	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
+
+	const packages = {};
+	const linkMap = {};
+	let toLinked = 0;
+	let linkedIn = 0;
+	let linkedInsExpected = 0;
+
+	for (name of deps) {
+		const pkgPath = path.join(roboModsDir, name, 'package.json');
+		packages[name] = loadJson(pkgPath);
+	}
+
+	for (toLink of deps) {
+		Reflect.ownKeys(packages).forEach(insideOf => {
+			const dep = packages[insideOf];
+
+			if (Reflect.has(dep, 'dependencies') &&
+				Reflect.has(dep.dependencies, toLink)) {
+				const linkMsg = '🔗  ' + chalk.cyan(toLink) + ' should be linked inside of: ' + chalk.cyan(insideOf);
+				log(linkMsg);
+
+				if (!Reflect.has(linkMap, toLink)) {
+					linkMap[toLink] = {};
+				}
+
+				if (!Reflect.has(linkMap[toLink], insideOf)) {
+					linkMap[toLink][insideOf] = 0;
+				}
+
+				linkMap[toLink][insideOf] += 1;
+				linkedInsExpected += 1;
+			}
+		});
+	}
+
+	// const logFinishedToLinks = () => {
+	// 	log('🏁  ' + chalk.yellow.underline('LINKED...'));
+	// 	for (name of robonautDeps) {
+	// 		const version = depStack[name].version;
+	// 		log(`${chalk.green(name)} @${version}`);
+	// 	};
+	// 	logAssembleResults();
+	// };
+
+	const spawnNpmLinkIn = (toLink, insideOf) => {
+		const dir = path.join(roboModsDir, insideOf);
+
+		const npmLinkInOpts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const npmLinkInArgs = ['link', toLink];
+		const npmLinkIn = childProcess.spawn('npm', npmLinkInArgs, npmLinkInOpts);
+
+		log(`yoke: 📡  ${chalk.red('cd ') + chalk.yellow(insideOf) + chalk.red(' && ') + chalk.yellow('npm link ' + toLink)}`);
+
+		npmLinkIn.on('close', code => {
+			linkedIn += 1;
+
+			const doneMsg = `yoke: npm link 🔗  ${chalk.green(toLink)} ${chalk.blue('linked-in >')} ${chalk.green(insideOf)} ${chalk.cyan('✔')} `;
+			log(doneMsg);
+
+			if (linkedIn === linkedInsExpected) {
+				// logFinishedToLinks();
+				// queueInstalls();
+				// linkIn();
+				console.log('all done!');
+			}
+		});
+	};
+
+
+	const linkIn = () => {
+		Reflect.ownKeys(linkMap).forEach(toLink => {
+			Reflect.ownKeys(linkMap[toLink]).forEach(insideOf => {
+				spawnNpmLinkIn(toLink, insideOf);
+			});
+		});
+	};
+
+	const spawnNpmToLink = link => {
+		const dir = path.join(roboModsDir, link);
+
+		const npmToLinkOpts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const npmToLinkArgs = ['link'];
+		const npmToLink = childProcess.spawn('npm', npmToLinkArgs, npmToLinkOpts);
+
+		log(`yoke: 📡  ${chalk.red('cd ') + chalk.yellow(link) + chalk.red(' && ') + chalk.yellow('npm link')}`);
+
+		npmToLink.on('close', code => {
+			toLinked += 1;
+
+			const doneMsg = `yoke: npm link 🔗  ${chalk.green(link)} ${chalk.cyan('✔')} ${chalk.cyan('linked-out >')}`;
+			log(doneMsg);
+
+			if (Reflect.ownKeys(linkMap).length === toLinked) {
+				// logFinishedToLinks();
+				// queueInstalls();
+				linkIn();
+			}
+		});
+	};
+
+	const linkOut = () => {
+		Reflect.ownKeys(linkMap).forEach(toLink => {
+			spawnNpmToLink(toLink);
+		});
+	};
+
+	linkOut();
 };
 
 const npm = props => {
@@ -321,9 +438,9 @@ const decimate = () => {
 
 const main = {
 	init,
-	skyjack,
+	glom,
 	assemble,
-	crosslink,
+	yoke,
 	npm,
 	git,
 	exec,
