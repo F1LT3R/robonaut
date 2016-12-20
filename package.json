@@ -1,37 +1,45 @@
 {
-  "name": "robonaut",
-  "version": "1.0.0-alpha",
-  "description": "A monorepo manager for NPM+Git libraries.",
-  "preferGlobal": true,
-  "main": "robonaut.js",
-  "bin": {
-    "robonaut": "robonaut.js"
-  },
-  "scripts": {
-    "start": "node robonaut.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/f1lt3r/robotnaut.git"
-  },
-  "keywords": [
-    "monorepo",
-    "git",
-    "npm",
-    "node",
-    "package",
-    "manage",
-    "project",
-    "ecosystem"
-  ],
-  "author": "f1lt3r",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/f1lt3r/robotnaut/issues"
-  },
-  "homepage": "https://github.com/f1lt3r/robotnaut#readme",
-  "devDependencies": {
-    "xo": "^0.17.1"
-  }
+    "pkg": {
+        "name": "robonaut",
+        "version": "1.0.0-alpha",
+        "description": "A monorepo manager for NPM+Git libraries.",
+        "preferGlobal": true,
+        "main": "robonaut.js",
+        "bin": {
+            "robonaut": "robonaut.js"
+        },
+        "scripts": {
+            "start": "node robonaut.js",
+            "test": "echo \"Error: no test specified\" && exit 1"
+        },
+        "repository": {
+            "type": "git",
+            "url": "git+ssh://git@github.com/f1lt3r/robotnaut.git"
+        },
+        "keywords": [
+            "monorepo",
+            "git",
+            "npm",
+            "node",
+            "package",
+            "manage",
+            "project",
+            "ecosystem"
+        ],
+        "author": "f1lt3r",
+        "license": "MIT",
+        "bugs": {
+            "url": "https://github.com/f1lt3r/robotnaut/issues"
+        },
+        "homepage": "https://github.com/f1lt3r/robotnaut#readme",
+        "devDependencies": {
+            "xo": "^0.17.1"
+        },
+        "dependencies": {
+            "chalk": "^1.1.3",
+            "jsonfile": "^2.4.0"
+        }
+    },
+    "path": "/Users/al/ms/robonaut/package.json",
+    "robonautDeps": {}
 }
