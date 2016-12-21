@@ -478,13 +478,13 @@ const scan = () => {
 	const deps = pkg.data.robonautDeps;
 	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
 
-	const execGitStatus = dir => new Promise((resolve, reject) => {
-		const gitStatusOpts = {
+	const spawnGitDiff = dir => new Promise((resolve, reject) => {
+		const gitDiffOpts = {
 			cwd: dir,
 			// stdio: ['ignore', 1, 2]
 		};
 
-		gitStatusArgs = [
+		gitDiffArgs = [
 			'diff',
 			// '--name-only',
 			'--word-diff=color',
@@ -493,15 +493,34 @@ const scan = () => {
 			// '--minimal',
 			'--ws-error-highlight=new,old'
 
-			// 'status',
-			// '-s',
-			// // '-b'
 		];
 
-		// const gitStatusCmd = childProcess.exec('git status -s', gitStatusOpts, (err, stdout, stderr) => {
-		// 	log(`scan: 📡  ${chalk.red('cd ') + chalk.yellow(dir) + chalk.red(' && ') + chalk.yellow('git status -s')}`);
-		// 	resolve(stdout);
-		// });
+		const gitDiffCmd = childProcess.spawn('git', gitDiffArgs, gitDiffOpts);
+
+		let retData = '';
+
+		gitDiffCmd.stdout.on('data', data => {
+			retData += data;
+		});
+
+		gitDiffCmd.stderr.on('data', data => {});
+
+		gitDiffCmd.on('close', code => {
+			resolve(retData);
+		});
+	});
+
+	const spawnGitStatus = dir => new Promise((resolve, reject) => {
+		const gitStatusOpts = {
+			cwd: dir,
+			// stdio: ['ignore', 1, 2]
+		};
+
+		gitStatusArgs = [
+			'status',
+			'-s',
+			// '-b'
+		];
 
 		const gitStatusCmd = childProcess.spawn('git', gitStatusArgs, gitStatusOpts);
 
@@ -511,42 +530,40 @@ const scan = () => {
 			retData += data;
 		});
 
-		gitStatusCmd.stderr.on('data', data => {
-			retData += 'asdasd' + data;
-		});
-
+		gitStatusCmd.stderr.on('data', data => {});
 
 		gitStatusCmd.on('close', code => {
-			// log(`scan: 📡  ${chalk.red('cd ') + chalk.yellow(dir) + chalk.red(' && ') + chalk.yellow('git status -s')}`);
 			resolve(retData);
-		// 	// toLinked += 1;
-
-		// 	const doneMsg = `status: npm link 🔗  ${chalk.green(link)} ${chalk.cyan('✔')} ${chalk.cyan('linked-out >')}`;
-		// 	log(doneMsg);
-
-		// 	if (Reflect.ownKeys(linkMap).length === toLinked) {
-		// 		linkIn();
-		// 	}
 		});
 	});
+
 
 	const promises = [];
 
 	for (name of deps) {
 		const pkgPath = path.join(roboModsDir, name);
-		promises.push(execGitStatus(pkgPath));
+		promises.push(spawnGitStatus(pkgPath));
+		promises.push(spawnGitDiff(pkgPath));
 	}
 
 	charm(promises)
 	.then(results => {
 		results.forEach((result, idx) => {
-			log(chalk.yellow.underline('GIT DIFF/STATUS...') + ' ' + chalk.cyan(deps[idx]));
-			if (!result) {
-				// console.log('NADDA!');
-			} else {
-				console.log();
+			if (idx % 2 === 0 && result) {
+				// log(chalk.yellow.underline('SCANNED...') + '\n\n ' + chalk.bold.bgBlue.white(` ${deps[idx / 2].toUpperCase()} `));
+				console.log('' + chalk.bold.bgMagenta.white.underline(` ${deps[idx / 2].toUpperCase()} `));
+				console.log('\n ' + chalk.bgRed.white.bold(' STATUS '));
 				console.log(result);
+			} else if(result) {
+				console.log('\n ' + chalk.bgRed.white.bold(' DIFF '));
+				console.log(' ' + result.replace(/\n/g, '\n '));
+
 			}
+
+			// if (!result) {
+			// 	// NOOP
+			// } else {
+			// }
 		});
 	})
 	.catch(err => {
