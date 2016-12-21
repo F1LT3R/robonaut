@@ -33,6 +33,17 @@ const showHelp = () => {
 	log('robonaut help');
 };
 
+const chars = (n, char) => {
+	let str = '';
+
+	for (let i = 0; i < n; i += 1) {
+		str += char;
+	}
+
+	return str;
+};
+
+
 // const fileExistsSync = path => {
 // 	let exists;
 
@@ -106,7 +117,7 @@ const getPkg = () => {
 	return {data: pkg, path: pkgPath};
 };
 
-const init = () => {
+const embed = () => {
 	log('init');
 
 	const pkg = getPkg();
@@ -127,23 +138,23 @@ const init = () => {
 	}
 };
 
-const glom = deps => {
+const prime = deps => {
 	const roboDeps = deps[0].split(',');
 
-	log(`glom: ${JSON.stringify(roboDeps)}`);
+	log(`prime: ${JSON.stringify(roboDeps)}`);
 
 	const pkg = getPkg();
 
 	let depsAdded = 0;
 
 	if (!Reflect.has(pkg, 'data') || !Reflect.has(pkg.data, 'robonautDeps')) {
-		throw log(`glom: failed, no robonautDeps in package (try 'robonaut init')`);
+		throw log(`prime: failed, no robonautDeps in package (try 'robonaut init')`);
 	}
 
 	for (dep of roboDeps) {
 		if (pkg.data.robonautDeps.indexOf(dep) === -1) {
 			pkg.data.robonautDeps.push(dep);
-			log(`glom: '${chalk.underline(dep)}' has been glomed`);
+			log(`prime: '${chalk.underline(dep)}' has been primeed`);
 			depsAdded += 1;
 		}
 	}
@@ -151,7 +162,7 @@ const glom = deps => {
 	if (depsAdded > 0) {
 		saveJson(pkg.path, pkg.data);
 	} else {
-		log(`glom: no new deps added`);
+		log(`prime: no new deps added`);
 	}
 };
 
@@ -290,7 +301,7 @@ const assemble = () => {
 	fetchPackages();
 };
 
-const yoke = props => {
+const fuse = props => {
 	const pkg = getPkg();
 
 	const deps = pkg.data.robonautDeps;
@@ -330,14 +341,20 @@ const yoke = props => {
 		});
 	}
 
-	// const logFinishedToLinks = () => {
-	// 	log('🏁  ' + chalk.yellow.underline('LINKED...'));
-	// 	for (name of robonautDeps) {
-	// 		const version = depStack[name].version;
-	// 		log(`${chalk.green(name)} @${version}`);
-	// 	};
-	// 	logAssembleResults();
-	// };
+
+	const logFinishedLinks = () => {
+		log('🏁  ' + chalk.yellow.underline('LINKED...'));
+
+		Reflect.ownKeys(linkMap).forEach(toLink => {
+			const linkMsg = toLink + '\\';
+			console.log(linkMsg);
+			const space = chars(linkMsg.length, ' ');
+
+			Reflect.ownKeys(linkMap[toLink]).forEach(insideOf => {
+				console.log(space + '-' + insideOf);
+			});
+		});
+	};
 
 	const spawnNpmLinkIn = (toLink, insideOf) => {
 		const dir = path.join(roboModsDir, insideOf);
@@ -350,23 +367,19 @@ const yoke = props => {
 		const npmLinkInArgs = ['link', toLink];
 		const npmLinkIn = childProcess.spawn('npm', npmLinkInArgs, npmLinkInOpts);
 
-		log(`yoke: 📡  ${chalk.red('cd ') + chalk.yellow(insideOf) + chalk.red(' && ') + chalk.yellow('npm link ' + toLink)}`);
+		log(`fuse: 📡  ${chalk.red('cd ') + chalk.yellow(insideOf) + chalk.red(' && ') + chalk.yellow('npm link ' + toLink)}`);
 
 		npmLinkIn.on('close', code => {
 			linkedIn += 1;
 
-			const doneMsg = `yoke: npm link 🔗  ${chalk.green(toLink)} ${chalk.blue('linked-in >')} ${chalk.green(insideOf)} ${chalk.cyan('✔')} `;
+			const doneMsg = `fuse: npm link 🔗  ${chalk.green(toLink)} ${chalk.blue('linked-in >')} ${chalk.green(insideOf)} ${chalk.cyan('✔')} `;
 			log(doneMsg);
 
 			if (linkedIn === linkedInsExpected) {
-				// logFinishedToLinks();
-				// queueInstalls();
-				// linkIn();
-				console.log('all done!');
+				logFinishedLinks();
 			}
 		});
 	};
-
 
 	const linkIn = () => {
 		Reflect.ownKeys(linkMap).forEach(toLink => {
@@ -387,17 +400,15 @@ const yoke = props => {
 		const npmToLinkArgs = ['link'];
 		const npmToLink = childProcess.spawn('npm', npmToLinkArgs, npmToLinkOpts);
 
-		log(`yoke: 📡  ${chalk.red('cd ') + chalk.yellow(link) + chalk.red(' && ') + chalk.yellow('npm link')}`);
+		log(`fuse: 📡  ${chalk.red('cd ') + chalk.yellow(link) + chalk.red(' && ') + chalk.yellow('npm link')}`);
 
 		npmToLink.on('close', code => {
 			toLinked += 1;
 
-			const doneMsg = `yoke: npm link 🔗  ${chalk.green(link)} ${chalk.cyan('✔')} ${chalk.cyan('linked-out >')}`;
+			const doneMsg = `fuse: npm link 🔗  ${chalk.green(link)} ${chalk.cyan('✔')} ${chalk.cyan('linked-out >')}`;
 			log(doneMsg);
 
 			if (Reflect.ownKeys(linkMap).length === toLinked) {
-				// logFinishedToLinks();
-				// queueInstalls();
 				linkIn();
 			}
 		});
@@ -412,6 +423,21 @@ const yoke = props => {
 	linkOut();
 };
 
+const numerate = props => {
+	//git status -s
+};
+
+const transmit = props => {
+};
+
+const decimate = () => {
+	log(`🔥  Decimating...`);
+	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
+	fs.removeSync(roboModsDir);
+	fs.mkdirSync(roboModsDir);
+	log(`decimate: ${chalk.green(roboModsDir)} ${chalk.bgGreen.black(' DECIMATED OK ')} 👍  `);
+};
+
 const npm = props => {
 };
 
@@ -421,32 +447,20 @@ const git = props => {
 const exec = props => {
 };
 
-const prime = props => {
-	//git status -s
-};
-
-const transmit = props => {
-};
-
-const decimate = () => {
-	log(`🔥  decimating...`);
-	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
-	fs.removeSync(roboModsDir);
-	fs.mkdirSync(roboModsDir);
-	log(`decimate: ${chalk.green(roboModsDir)} ${chalk.bgGreen.black(' DECIMATED OK ')} 👍  `);
-};
-
 const main = {
-	init,
-	glom,
+	// Robonaut Commands
+	embed,
+	prime,
 	assemble,
-	yoke,
+	fuse,
+	numerate,
+	transmit,
+	decimate,
+
+	// NPM/Git/CLI Proxy Commands
 	npm,
 	git,
-	exec,
-	prime,
-	decimate,
-	transmit
+	exec
 };
 
 const stackCmds = args => {
