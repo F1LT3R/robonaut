@@ -11,6 +11,7 @@ const gitRevSync = require('git-rev-sync');
 const Promise = require('bluebird');
 const charm = require('promise-charm');
 
+var term = require( 'terminal-kit' ).terminal ;
 
 jsonfile.spaces = 4;
 
@@ -78,7 +79,7 @@ const dirExistsSync = path => {
 };
 
 const loadJson = url => {
-	log(`'loadJson: ${url}`);
+	// log(`'loadJson: ${url}`); // trace
 
 	try {
 		// eslint-disable-next-line
@@ -472,7 +473,10 @@ const fuse = props => {
 	linkOut();
 };
 
-const scan = () => {
+const scan = silent => new Promise((resolve, reject) => {
+	// console.log(!!silent);
+	// console.log(silent);
+
 	const pkg = getPkg();
 
 	const deps = pkg.data.robonautDeps;
@@ -548,32 +552,286 @@ const scan = () => {
 
 	charm(promises)
 	.then(results => {
+		const changeStack = [];
+
 		results.forEach((result, idx) => {
 			if (idx % 2 === 0 && result) {
-				// log(chalk.yellow.underline('SCANNED...') + '\n\n ' + chalk.bold.bgBlue.white(` ${deps[idx / 2].toUpperCase()} `));
-				console.log('' + chalk.bold.bgMagenta.white.underline(` ${deps[idx / 2].toUpperCase()} `));
-				console.log('\n ' + chalk.bgRed.white.bold(' STATUS '));
-				console.log(result);
-			} else if(result) {
-				console.log('\n ' + chalk.bgRed.white.bold(' DIFF '));
-				console.log(' ' + result.replace(/\n/g, '\n '));
-
+				changeStack.push(deps[idx/2]);
 			}
 
-			// if (!result) {
-			// 	// NOOP
-			// } else {
-			// }
+			if (!silent) {
+				if (idx % 2 === 0 && result) {
+					console.log('' + chalk.bold.bgMagenta.white.underline(` ${deps[idx / 2].toUpperCase()} `));
+					console.log('\n ' + chalk.bgRed.white.bold(' STATUS '));
+					console.log(result);
+				} else if(result) {
+					console.log('\n ' + chalk.bgRed.white.bold(' DIFF '));
+					console.log(' ' + result.replace(/\n/g, '\n '));
+				}
+			}
 		});
+
+		resolve(changeStack);
 	})
 	.catch(err => {
 		throw err;
 	});
-};
+});
 
 const numerate = props => {
-	//git status -s
+	// const pkg = getPkg();
+	// const deps = pkg.data.robonautDeps;
+	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
+
+	let longestName = 0;
+
+	const numeration = {
+		major: 0,
+		minor: 0,
+		patch: 0,
+		// release: undefined,
+		// release: 'alpha',
+		// build: undefined
+		// build: 'a4b23C33'
+	};
+
+	let cursor = 'patch';
+
+	const select = which => {
+		Reflect.ownKeys(numeration).forEach(key => {
+			numeration[key] = 0;
+		});
+
+		numeration[which] = 1;
+	};
+
+	select(cursor);
+
+	const x = k => {
+		return numeration[k] ? 'yellow' : 'cyan';
+	};
+
+	const y = k => {
+		return numeration[k] ? 'italic' : 'bold';
+	};
+
+	const col = (k, v) => {
+		return chalk[y(k)][x(k)](v[k]);
+	}
+
+	const colz = (k, str) => {
+		return chalk[y(k)][x(k)](str);
+	}
+
+	const bg = k => {
+		const isSelected = cursor === k;
+		const retCol = isSelected ? 'bgYellow' : 'bgBlack';
+		return retCol;
+	};
+
+	const fg = k => {
+		const isSelected = cursor === k;
+		const retCol = isSelected ? 'black' : 'italic';
+		return retCol;
+	};
+
+	const csel = (k, str) => {
+		return chalk[bg(k)][fg(k)](str);
+	}
+
+	const spaced = (name, len, flip, char) => {
+		const nDiff = (len || longestName) - name.length;
+		if (flip) {
+			return name + chars(nDiff, char || ' ');
+		}
+
+		return chars(nDiff, char || ' ') + name;
+	};
+
+	var separators = ['\\.', '-', '\\+'];
+
+	const unpackVer = versionStr => {
+		const parts = versionStr.split(new RegExp(separators.join('|'), 'g'));
+
+		const version = {
+			major: parseInt(parts[0], 10),
+			minor: parseInt(parts[1], 10),
+			patch: parseInt(parts[2], 10),
+			release: parts[3],
+			build: parts[4],
+		};
+
+		return version;
+	};
+
+	const packVer = (v, color) => {
+		let versionStr = '';
+
+		if (color) {
+			versionStr += col('major', v) + '.';
+			versionStr += col('minor', v) + '.';
+			versionStr += col('patch', v);
+
+			// if (!!v.release) {
+			// 	versionStr += '-' + col('release', v);
+			// }
+
+			// if (!!v.build) {
+			// 	versionStr += '-' + col('build', v);
+			// }
+		} else {
+			versionStr += v['major'] + '.';
+			versionStr += v['minor'] + '.';
+			versionStr += v['patch'];
+		}
+
+		return versionStr;
+	};
+
+	const computeVer = version => {
+		const updatedVer = {
+			major: version.major + numeration.major,
+			minor: version.minor + numeration.minor,
+			patch: version.patch + numeration.patch,
+		};
+
+		if (numeration.major) {
+			updatedVer.minor = 0;
+			updatedVer.patch = 0;
+		}
+
+		if (numeration.minor){
+			updatedVer.patch = 0;
+		}
+
+		return updatedVer;
+	};
+
+	const updatedVersionMap = {};
+
+	const delin = versionStr => {
+		const oldVer = unpackVer(versionStr);
+		const newVer = computeVer(oldVer);
+		return newVer;
+	};
+
+	const line = (...deets) => {
+		const [name, version] = deets;
+		const updatedVersion = delin(version);
+		updatedVersionMap[name] = packVer(updatedVersion);
+		const nextVerColor = packVer(updatedVersion, true);
+		console.log(` ${chalk.blue(name)} ${chalk.dim('(' + version + ')')} » ${nextVerColor}`);
+	};
+
+	const ul = chalk.underline;
+
+	const sel   = '   +   ';
+	const desel = '_______';
+
+
+	scan(true).then(changeStack => {
+		const printStack = () => {
+			let parts1 = '\n';
+			parts1 += ' ' + colz('major', csel('major', ' Major ')) + '';
+			parts1 += ' ' + colz('minor', csel('minor', ' Minor ')) + '';
+			parts1 += ' ' + colz('patch', csel('patch', ' Patch ')) + '';
+			// parts1 += ' ' + colz('release', csel('release', ' Pre-Release ')) + '';
+			// parts1 += ' ' + colz('build', csel('build', ' Build  ')) + '';
+
+			let parts2 = '';
+			parts2 += ' ' + colz('major', !!numeration['major'] ? sel : desel) + '';
+			parts2 += ' ' + colz('minor',  !!numeration['minor'] ? sel : desel) + '';
+			parts2 += ' ' + colz('patch',  !!numeration['patch'] ? sel : desel) + '';
+			// parts2 += ' ' + colz('release', !!numeration['release'] ? csel('release', spaced(numeration['release'], 13, true)) : unselected('_____________'));
+			// parts2 += ' ' + colz('build',   !!numeration['build']   ? csel('build', spaced(numeration['build'], 8, true)) : unselected('________'));
+
+			console.log(parts1);
+			console.log(parts2);
+
+			changeStack.forEach(name => {
+				const modPath = path.join(roboModsDir, name);
+				const pkgPath = path.join(modPath, 'package.json');
+				const hash = gitRevSync.short(pkgPath);
+				const branch = gitRevSync.branch(pkgPath);
+				const version = loadJson(pkgPath).version;
+				line(spaced(name), version);
+			});
+		}
+
+		term.grabInput();
+
+		const numeKeys = Reflect.ownKeys(numeration);
+		const numeLen = numeKeys.length;
+		let cursorIdx = numeKeys.indexOf(cursor);
+
+		const setCursor = () => {
+			cursor = numeKeys[cursorIdx];
+			select(cursor);
+			console.log('\x1b\x5b' + (changeStack.length + 4) + '\x41');
+			printStack();
+		};
+
+		term.on('key', (name, matches, data) => {
+			// console.log(name);
+
+			if (name === 'ENTER') {
+				console.log(updatedVersionMap);
+			}
+
+			if (name === 'CTRL_C') {
+				process.exit();
+			}
+
+			if (name === 'LEFT') {
+				cursorIdx -= 1;
+				if (cursorIdx < 0) {
+					cursorIdx = numeLen - 1;
+				}
+				setCursor();
+			}
+
+			if (name === 'RIGHT') {
+				cursorIdx += 1;
+				if (cursorIdx > numeLen - 1) {
+					cursorIdx = 0;
+				}
+				setCursor();
+			}
+		});
+
+		changeStack.forEach(name => {
+			if (name.length > longestName) {
+				longestName = name.length;
+			}
+		});
+
+		// changeStack.forEach(name => {
+		// 	const modPath = path.join(roboModsDir, name);
+		// 	const pkgPath = path.join(modPath, 'package.json');
+		// 	const hash = gitRevSync.short(pkgPath);
+		// 	const branch = gitRevSync.branch(pkgPath);
+		// 	const version = loadJson(pkgPath).version;
+		// 	console.log(`${chalk.blue(spaced(name))}  ${chalk.yellow(branch)} # ${chalk.cyan(hash)} @ ${chalk.red(version)}`);
+		// });
+
+
+
+		// const promises = [];
+
+		// for (name of deps) {
+		// 	const modPath = path.join(roboModsDir, name);
+		// 	const pkgPath = path.join(modPath, 'package.json');
+		// 	const gitHash = gitRevSync.short(pkgPath);
+		// 	const npmVer = loadJson(pkgPath).version;
+		// 	console.log(`${name} @${npmVer} #${gitHash}`);
+		// }
+		printStack();
+	}).catch(err => {
+		throw err;
+	});
+
 };
+
 
 const transmit = props => {
 };
@@ -634,7 +892,8 @@ const processCmds = cmds => {
 
 		if (Reflect.has(main, cmdName)) {
 			validCmds += 1;
-			main[cmdName](cmd);
+			// main[cmdName](cmd);
+			main[cmdName]();
 		}
 	}
 

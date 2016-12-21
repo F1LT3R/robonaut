@@ -46,8 +46,10 @@
     "bluebird": "^3.4.6",
     "fs-extra": "^1.0.0",
     "git-rev-sync": "^1.8.0",
+    "keypress": "^0.2.1",
     "package-json": "^2.4.0",
-    "promise-charm": "^1.0.0-alpha"
+    "promise-charm": "^1.0.0-alpha",
+    "terminal-kit": "^0.25.6"
   },
   "devDependencies": {
     "fs-extra": "^1.0.0"
