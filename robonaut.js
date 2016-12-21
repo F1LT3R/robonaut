@@ -230,7 +230,10 @@ const assemble = () => {
 
 		log(`assemble: 📡  ${chalk.yellow('npm install ' + name)}`);
 
-		def.npmInstall.on('close', code => {
+		let hasEnded = false;
+		const ended = code => {
+			hasEnded = true;
+
 			// log(`assemble: npm install 📦  ${chalk.green(def.name)} ${chalk.cyan('✔')} `);
 			log(`assemble: npm install ${chalk.cyan('')}  ${chalk.green(def.name)} ${chalk.cyan('✔')} `);
 
@@ -239,7 +242,18 @@ const assemble = () => {
 			if (installed === depCount) {
 				logFinishedInstalls();
 			}
+		};
+		def.npmInstall.on('close', code => {
+			if (!hasEnded) {
+				ended();
+			}
 		});
+		def.npmInstall.on('exit', code => {
+			if (!hasEnded) {
+				ended();
+			}
+		});
+
 	};
 
 	const queueInstalls = () => {
@@ -267,7 +281,9 @@ const assemble = () => {
 
 		log(`assemble: 📡  ${chalk.yellow('git clone ' + json.name)}`);
 
-		def.gitClone.on('close', code => {
+		let hasEnded = false;
+		const ended = code => {
+			hasEnded = true;
 			cloned += 1;
 
 			const doneMsg = `assemble: git clone ${chalk.cyan('')}  ${chalk.green(def.name)} ${chalk.cyan('✔')}`;
@@ -276,6 +292,17 @@ const assemble = () => {
 			if (cloned === depCount) {
 				logFinishedClones();
 				queueInstalls();
+			}
+		};
+
+		def.gitClone.on('close', code => {
+			if (!hasEnded) {
+				ended();
+			}
+		});
+		def.gitClone.on('exit', code => {
+			if (!hasEnded) {
+				ended();
 			}
 		});
 	};
@@ -345,13 +372,32 @@ const fuse = props => {
 	const logFinishedLinks = () => {
 		log('🏁  ' + chalk.yellow.underline('LINKED...'));
 
-		Reflect.ownKeys(linkMap).forEach(toLink => {
-			const linkMsg = toLink + '\\';
-			console.log(linkMsg);
-			const space = chars(linkMsg.length, ' ');
+		const invertedMap = {};
 
-			Reflect.ownKeys(linkMap[toLink]).forEach(insideOf => {
-				console.log(space + '-' + insideOf);
+		Reflect.ownKeys(linkMap).forEach(toLink => {
+			Reflect.ownKeys(linkMap[toLink]).forEach((insideOf, idx) => {
+				if (!Reflect.has(invertedMap, insideOf)) {
+					invertedMap[insideOf] = {};
+				}
+				if (!Reflect.has(invertedMap, insideOf[toLink])) {
+					invertedMap[insideOf][toLink] = true;
+				}
+			});
+		});
+
+		Reflect.ownKeys(invertedMap).forEach(parentPkg => {
+			// «
+			const linkMsg = parentPkg + chalk.yellow(' ⇠ ') + chalk.green('━┓');
+			console.log(linkMsg);
+			const space = chars(linkMsg.length - 21, ' ');
+
+			const childKeys = Reflect.ownKeys(invertedMap[parentPkg]);
+			childKeys.forEach((childPkg, idx) => {
+				if (idx === childKeys.length - 1) {
+					console.log(space + chalk.green('┗━') + chalk.yellow(' ⇠ ') + childPkg);
+				} else {
+					console.log(space + chalk.green('┣━') + chalk.yellow(' ⇠ ') + childPkg);
+				}
 			});
 		});
 	};
