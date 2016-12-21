@@ -11,9 +11,9 @@ const gitRevSync = require('git-rev-sync');
 const Promise = require('bluebird');
 const charm = require('promise-charm');
 
-var term = require( 'terminal-kit' ).terminal ;
+var term = require('terminal-kit');
 
-jsonfile.spaces = 4;
+jsonfile.spaces = 2;
 
 // 📡🛰👽👾🎮📦☄🌚
 
@@ -96,12 +96,12 @@ const loadJson = url => {
 };
 
 const saveJson = (url, data) => {
-	log(`'saveJson: ${url}`);
+	// log(`'saveJson: ${url}`); //trace
 
 	try {
 		jsonfile.writeFileSync(url, data);
 
-		log(`${url} updated`);
+		// log(`${url} updated`);
 		return true;
 	} catch (err) {
 		log(`${url} NOT updated!`);
@@ -196,7 +196,7 @@ const assemble = () => {
 		log('🏁  ' + chalk.yellow.underline('ASSEMBLED...'));
 		for (name of robonautDeps) {
 			const def = depStack[name];
-			log(`${chalk.green(def.name)}: ${chalk.blue('  ')}@${def.gitHash} ${chalk.blue('  ')}@${def.version}  ${chalk.blue('✔')} `);
+			log(`${chalk.green(def.name)}: ${chalk.blue('  ')}#${def.gitHash} ${chalk.blue('  ')}@${def.version}  ${chalk.blue('✔')} `);
 		};
 
 	};
@@ -579,8 +579,6 @@ const scan = silent => new Promise((resolve, reject) => {
 });
 
 const numerate = props => {
-	// const pkg = getPkg();
-	// const deps = pkg.data.robonautDeps;
 	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
 
 	let longestName = 0;
@@ -716,11 +714,11 @@ const numerate = props => {
 	};
 
 	const line = (...deets) => {
-		const [name, version] = deets;
+		const [name, branch, version] = deets;
 		const updatedVersion = delin(version);
-		updatedVersionMap[name] = packVer(updatedVersion);
+		updatedVersionMap[name.replace(/\s/g, '')] = packVer(updatedVersion);
 		const nextVerColor = packVer(updatedVersion, true);
-		console.log(` ${chalk.blue(name)} ${chalk.dim('(' + version + ')')} » ${nextVerColor}`);
+		console.log(chalk.blue(name) + chalk.cyan('  ') + chalk.magenta(branch) + ` ${chalk.dim('(' + version + ')')} » ${nextVerColor}                `);
 	};
 
 	const ul = chalk.underline;
@@ -728,8 +726,24 @@ const numerate = props => {
 	const sel   = '   +   ';
 	const desel = '_______';
 
+	const updatePkgs = versionMap => {
+		Reflect.ownKeys(versionMap).forEach(key => {
+			const modPath = path.join(roboModsDir, key);
+			const pkgPath = path.join(modPath, 'package.json');
+			const pkgJson = loadJson(pkgPath);
 
-	scan(true).then(changeStack => {
+			const oldVersion = pkgJson.version;
+			const newVersion = versionMap[key];
+
+			pkgJson.version = newVersion;
+			saveJson(pkgPath, pkgJson);
+
+			log(`numerate: ${chalk.blue(key)} ${chalk.dim('(' + oldVersion + ')')} » ${chalk.green(newVersion)} ` + chalk.blue('✔'));
+		});
+	};
+
+	scan(true)
+	.then(changeStack => {
 		const printStack = () => {
 			let parts1 = '\n';
 			parts1 += ' ' + colz('major', csel('major', ' Major ')) + '';
@@ -754,11 +768,13 @@ const numerate = props => {
 				const hash = gitRevSync.short(pkgPath);
 				const branch = gitRevSync.branch(pkgPath);
 				const version = loadJson(pkgPath).version;
-				line(spaced(name), version);
+				line(spaced(name), branch, version);
 			});
+
+			console.log();
 		}
 
-		term.grabInput();
+		term.terminal.grabInput();
 
 		const numeKeys = Reflect.ownKeys(numeration);
 		const numeLen = numeKeys.length;
@@ -767,19 +783,26 @@ const numerate = props => {
 		const setCursor = () => {
 			cursor = numeKeys[cursorIdx];
 			select(cursor);
-			console.log('\x1b\x5b' + (changeStack.length + 4) + '\x41');
+			console.log('\x1b\x5b' + (changeStack.length + 5) + '\x41');
 			printStack();
 		};
 
-		term.on('key', (name, matches, data) => {
+		term.terminal.on('key', (name, matches, data) => {
 			// console.log(name);
 
 			if (name === 'ENTER') {
-				console.log(updatedVersionMap);
+				term.terminal.processExit();
+				updatePkgs(updatedVersionMap);
+			}
+
+			if (name === 'ESCAPE') {
+				log('enumerate: ' + chalk.red('[CANCELLED]'));
+				term.terminal.processExit();
 			}
 
 			if (name === 'CTRL_C') {
-				process.exit();
+				log('enumerate: ' + chalk.red('[CANCELLED]'));
+				term.terminal.processExit();
 			}
 
 			if (name === 'LEFT') {
@@ -805,26 +828,6 @@ const numerate = props => {
 			}
 		});
 
-		// changeStack.forEach(name => {
-		// 	const modPath = path.join(roboModsDir, name);
-		// 	const pkgPath = path.join(modPath, 'package.json');
-		// 	const hash = gitRevSync.short(pkgPath);
-		// 	const branch = gitRevSync.branch(pkgPath);
-		// 	const version = loadJson(pkgPath).version;
-		// 	console.log(`${chalk.blue(spaced(name))}  ${chalk.yellow(branch)} # ${chalk.cyan(hash)} @ ${chalk.red(version)}`);
-		// });
-
-
-
-		// const promises = [];
-
-		// for (name of deps) {
-		// 	const modPath = path.join(roboModsDir, name);
-		// 	const pkgPath = path.join(modPath, 'package.json');
-		// 	const gitHash = gitRevSync.short(pkgPath);
-		// 	const npmVer = loadJson(pkgPath).version;
-		// 	console.log(`${name} @${npmVer} #${gitHash}`);
-		// }
 		printStack();
 	}).catch(err => {
 		throw err;
@@ -832,8 +835,122 @@ const numerate = props => {
 
 };
 
+const distribute = commitMsg => {
+	const pkg = getPkg();
 
-const transmit = props => {
+	const deps = pkg.data.robonautDeps;
+	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
+
+	const npmPublish = (dir, name) => {
+		const args = [
+			'publish'
+		];
+
+		const opts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const cmd = childProcess.spawn('npm', args, opts);
+
+		// npmPublishCmd.stderr.on('data', data => {});
+
+		cmd.on('close', code => {
+			log(`transmit: npm publish ${chalk.yellow(name)}`);
+		});
+	};
+
+	const gitPush = (dir, name) => {
+		const args = [
+			'push'
+		];
+
+		const opts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const cmd = childProcess.spawn('git', args, opts);
+
+		// gitPushCmd.stderr.on('data', data => {});
+
+		cmd.on('close', code => {
+			log(`transmit: git push ${chalk.yellow(name)}`);
+			npmPublish(dir, name);
+		});
+	};
+
+	const gitCommit = (dir, name) => {
+		const args = [
+			'commit',
+			'-m ' + commitMsg,
+			// commitMsg
+		];
+
+		const opts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const cmd = childProcess.spawn('git', args, opts);
+
+		cmd.on('close', code => {
+			log(`transmit: git commit -m ${chalk.yellow(name)} "${chalk.blue(commitMsg)}"`);
+			gitPush(dir, name);
+		});
+	};
+
+	const gitAdd = (dir, name) => {
+
+		const args = [
+			'add',
+			'-A'
+		];
+
+		const opts = {
+			cwd: dir,
+			stdio: ['ignore', 1, 2]
+		};
+
+		const cmd = childProcess.spawn('git', args, opts);
+
+		cmd.on('close', code => {
+			log(`transmit: git add -A ${chalk.yellow(name)}`);
+			gitCommit(dir, name);
+		});
+	};
+
+
+	scan(true)
+	.then(changeStack => {
+		changeStack.forEach(name => {
+			const dir = path.join(roboModsDir, name);
+			gitAdd(dir, name);
+		});
+	});
+};
+
+const getCommitMsg = () => new Promise((resolve, reject) => {
+	const realTerm = term.createTerminal();
+	realTerm.yellow('Commit message: ');
+
+	realTerm.inputField((error, msg) => {
+		if (error) {
+			reject(error);
+		}
+
+		realTerm.processExit();
+		resolve(msg);
+	});
+});
+
+const transmit = () => {
+	getCommitMsg().then(msg => {
+		distribute(msg);
+	})
+	.catch(err => {
+		throw err;
+	});
 };
 
 const decimate = () => {
