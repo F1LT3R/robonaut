@@ -8,6 +8,9 @@ const chalk = require('chalk');
 const jsonfile = require('jsonfile');
 const packageJson = require('package-json');
 const gitRevSync = require('git-rev-sync');
+const Promise = require('bluebird');
+const charm = require('promise-charm');
+
 
 jsonfile.spaces = 4;
 
@@ -469,6 +472,88 @@ const fuse = props => {
 	linkOut();
 };
 
+const scan = () => {
+	const pkg = getPkg();
+
+	const deps = pkg.data.robonautDeps;
+	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
+
+	const execGitStatus = dir => new Promise((resolve, reject) => {
+		const gitStatusOpts = {
+			cwd: dir,
+			// stdio: ['ignore', 1, 2]
+		};
+
+		gitStatusArgs = [
+			'diff',
+			// '--name-only',
+			'--word-diff=color',
+			'--color=always',
+			'-U1',
+			// '--minimal',
+			'--ws-error-highlight=new,old'
+
+			// 'status',
+			// '-s',
+			// // '-b'
+		];
+
+		// const gitStatusCmd = childProcess.exec('git status -s', gitStatusOpts, (err, stdout, stderr) => {
+		// 	log(`scan: 📡  ${chalk.red('cd ') + chalk.yellow(dir) + chalk.red(' && ') + chalk.yellow('git status -s')}`);
+		// 	resolve(stdout);
+		// });
+
+		const gitStatusCmd = childProcess.spawn('git', gitStatusArgs, gitStatusOpts);
+
+		let retData = '';
+
+		gitStatusCmd.stdout.on('data', data => {
+			retData += data;
+		});
+
+		gitStatusCmd.stderr.on('data', data => {
+			retData += 'asdasd' + data;
+		});
+
+
+		gitStatusCmd.on('close', code => {
+			// log(`scan: 📡  ${chalk.red('cd ') + chalk.yellow(dir) + chalk.red(' && ') + chalk.yellow('git status -s')}`);
+			resolve(retData);
+		// 	// toLinked += 1;
+
+		// 	const doneMsg = `status: npm link 🔗  ${chalk.green(link)} ${chalk.cyan('✔')} ${chalk.cyan('linked-out >')}`;
+		// 	log(doneMsg);
+
+		// 	if (Reflect.ownKeys(linkMap).length === toLinked) {
+		// 		linkIn();
+		// 	}
+		});
+	});
+
+	const promises = [];
+
+	for (name of deps) {
+		const pkgPath = path.join(roboModsDir, name);
+		promises.push(execGitStatus(pkgPath));
+	}
+
+	charm(promises)
+	.then(results => {
+		results.forEach((result, idx) => {
+			log(chalk.yellow.underline('GIT DIFF/STATUS...') + ' ' + chalk.cyan(deps[idx]));
+			if (!result) {
+				// console.log('NADDA!');
+			} else {
+				console.log();
+				console.log(result);
+			}
+		});
+	})
+	.catch(err => {
+		throw err;
+	});
+};
+
 const numerate = props => {
 	//git status -s
 };
@@ -499,6 +584,7 @@ const main = {
 	prime,
 	assemble,
 	fuse,
+	scan,
 	numerate,
 	transmit,
 	decimate,
