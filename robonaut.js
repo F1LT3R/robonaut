@@ -835,97 +835,177 @@ const numerate = props => {
 
 };
 
+const spawn = (cmd, args, opts) => new Promise((resolve, reject) => {
+	// console.log(cmd, args, opts);
+
+	const child = childProcess.spawn(cmd, args, opts);
+
+	let stdout = '';
+	let stderr = '';
+	let errs = [];
+
+	child.stderr.on('data', data => {
+		stderr += data;
+	});
+
+	child.stdout.on('data', data => {
+		stdout += data;
+	});
+
+	child.on('close', code => {
+		resolve(stderr, stdout);
+	});
+
+	child.on('exit', code => {
+		reject(errs);
+	});
+});
+
 const distribute = commitMsg => {
 	const pkg = getPkg();
 
 	const deps = pkg.data.robonautDeps;
 	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
 
-	const npmPublish = (dir, name) => {
-		const args = [
-			'publish'
-		];
+	const cmdStack = [];
+	const promiseStack = [];
+	const resultStack = [];
 
-		const opts = {
-			cwd: dir,
-			stdio: ['ignore', 1, 2]
-		};
+	const showProgress = true;
 
-		const cmd = childProcess.spawn('npm', args, opts);
+	const progressUpdate = msg => {
+		if (showProgress) {
+			console.log(`${msg}`);
+		}
+	};
 
-		// npmPublishCmd.stderr.on('data', data => {});
+	const spawnNext = stack => new Promise((resolve, reject) => {
+		if (stack.length > 0) {
+			const nextCmd = stack.shift()
+			spawn(nextCmd).then(() => {
+				resolve(spawnNext(stack));
+			}).catch(reject);
+		} else {
+			resolve(resultStack);
+		}
+	});
 
-		cmd.on('close', code => {
-			log(`transmit: npm publish ${chalk.yellow(name)}`);
+	const hasStd = (type, child) => {
+		stdType = 'std' + type;
+		return Reflect.has(child, stdType) && !!child[stdType];
+	};
+
+	const pretify = cmdAry => {
+		const [cmd, args] = cmdAry;
+		return ` ${cmd} ${args.join(' ')} `;
+	};
+
+	function spawn (nextCmd) {
+		const prettyCmd = chalk.bgBlack.yellow.underline(pretify(nextCmd));
+		console.log(prettyCmd + '\n');
+
+		return new Promise((resolve, reject) => {
+			const [cmd, args, opts] = nextCmd;
+
+			// console.log(cmd, args, opts);
+
+			let stdout = '';
+			let stderr = '';
+			let ended = false;
+
+			const end = code => {
+				if (ended) {
+					return;
+				}
+
+				ended = true;
+
+				if (code === 0) {
+					const output = [stderr, stdout];
+					resultStack.push(output);
+					resolve();
+				} else {
+					reject(stderr, stdout);
+				}
+			};
+
+			const child = childProcess.spawn(cmd, args, opts);
+
+			// if (hasStd('err', child)) {
+				// child.stderr.on('data', data => {
+				// 	stderr += data;
+				// });
+			// }
+
+			// if (hasStd('out', child)) {
+				// child.stdout.on('data', data => {
+				// 	progressUpdate(data);
+				// 	stdout += data;
+				// });
+			// }
+
+			child.on('error', err => {
+				console.error(err);
+				end();
+			});
+
+			child.on('close', code => {
+				end(code);
+			});
+
+			child.on('exit', code => {
+				end(code);
+			});
 		});
 	};
 
-	const gitPush = (dir, name) => {
-		const args = [
-			'push'
-		];
-
-		const opts = {
-			cwd: dir,
-			stdio: ['ignore', 1, 2]
-		};
-
-		const cmd = childProcess.spawn('git', args, opts);
-
-		// gitPushCmd.stderr.on('data', data => {});
-
-		cmd.on('close', code => {
-			log(`transmit: git push ${chalk.yellow(name)}`);
-			npmPublish(dir, name);
-		});
+	const defaultOpts = {
+		// timeout: 30,
+		// encoding: 'utf8',
+		// maxBuffer: 1024 * 1024,
+		// stdio: ['ignore', 1, 2],
+		// stdio: 'ignore'
+		stdio: 'inherit'
 	};
 
-	const gitCommit = (dir, name) => {
-		const args = [
-			'commit',
-			'-m ' + commitMsg,
-			// commitMsg
-		];
+	scan(true).then(changeStack => {
+		// console.log(changeStack);
 
-		const opts = {
-			cwd: dir,
-			stdio: ['ignore', 1, 2]
-		};
-
-		const cmd = childProcess.spawn('git', args, opts);
-
-		cmd.on('close', code => {
-			log(`transmit: git commit -m ${chalk.yellow(name)} "${chalk.blue(commitMsg)}"`);
-			gitPush(dir, name);
-		});
-	};
-
-	const gitAdd = (dir, name) => {
-
-		const args = [
-			'add',
-			'-A'
-		];
-
-		const opts = {
-			cwd: dir,
-			stdio: ['ignore', 1, 2]
-		};
-
-		const cmd = childProcess.spawn('git', args, opts);
-
-		cmd.on('close', code => {
-			log(`transmit: git add -A ${chalk.yellow(name)}`);
-			gitCommit(dir, name);
-		});
-	};
-
-
-	scan(true)
-	.then(changeStack => {
 		changeStack.forEach(name => {
 			const dir = path.join(roboModsDir, name);
-			gitAdd(dir, name);
+
+			const opts = Object.assign({}, defaultOpts, {
+				cwd: dir
+			});
+
+			const ls = ['ls', ['-la'], opts];
+			cmdStack.push(ls);
+
+			const gitAdd = ['git', ['add', '-A', '-v'], opts];
+			cmdStack.push(gitAdd);
+
+			const gitCommit = ['git', ['commit', '-m', `"${commitMsg}"`, '-v'], opts];
+			cmdStack.push(gitCommit);
+
+			const branch = gitRevSync.branch(dir);
+			const gitPush = ['git', ['push', 'origin', branch, '-v'], opts];
+			cmdStack.push(gitPush);
+
+			// const npmPublish = ['npm', ['publish', '--loglevel verbose'], opts];
+			// cmdStack.push(npmPublish);
+		});
+
+		// console.log(cmdStack);
+
+		spawnNext(cmdStack).then(results => {
+			console.log('______________________________________________________');
+			console.log('Success');
+			console.log(results);
+			// console.log(results.join('\n'));
+		}).catch(err => {
+			console.log('Error');
+			console.error(err);
+			console.log(resultStack);
 		});
 	});
 };
