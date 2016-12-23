@@ -1,5 +1,4 @@
 {
-  "pkg": {
     "name": "robonaut",
     "version": "1.1.0-alpha",
     "description": "A mono-(poly)-repo manager for NPM+Git libraries.",
@@ -38,19 +37,14 @@
     "dependencies": {
       "chalk": "^1.1.3",
       "jsonfile": "^2.4.0"
-    }
-  },
-  "path": "/Users/al/ms/robonaut/package.json",
-  "robonautDeps": {},
-  "dependencies": {
-    "bluebird": "^3.4.6",
-    "fs-extra": "^1.0.0",
-    "git-rev-sync": "^1.8.0",
-    "package-json": "^2.4.0",
-    "promise-charm": "^1.0.0-alpha",
-    "terminal-kit": "^0.25.6"
-  },
-  "devDependencies": {
-    "fs-extra": "^1.0.0"
-  }
+	},
+	"dependencies": {
+		"bluebird": "^3.4.6",
+		"fs-extra": "^1.0.0",
+		"git-rev-sync": "^1.8.0",
+		"package-json": "^2.4.0",
+		"promise-charm": "^1.0.0-alpha",
+		"terminal-kit": "^0.25.6",
+		"fs-extra": "^1.0.0"
+	}
 }
