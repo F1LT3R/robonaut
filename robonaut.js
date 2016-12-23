@@ -473,9 +473,8 @@ const fuse = props => {
 	linkOut();
 };
 
-const scan = silent => new Promise((resolve, reject) => {
-	// console.log(!!silent);
-	// console.log(silent);
+const scan = args => new Promise((resolve, reject) => {
+	const [silent] = args;
 
 	const pkg = getPkg();
 
@@ -578,7 +577,9 @@ const scan = silent => new Promise((resolve, reject) => {
 	});
 });
 
-const numerate = props => {
+const numerate = args => {
+	console.log(args);
+
 	const roboModsDir = path.join(cwdRoot, 'robonaut_modules');
 
 	let longestName = 0;
@@ -742,7 +743,7 @@ const numerate = props => {
 		});
 	};
 
-	scan(true)
+	scan([true])
 	.then(changeStack => {
 		const printStack = () => {
 			let parts1 = '\n';
@@ -861,7 +862,20 @@ const spawn = (cmd, args, opts) => new Promise((resolve, reject) => {
 	});
 });
 
-const distribute = commitMsg => {
+function addSlashes(str) {
+    return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+};
+
+const transmit = args => {
+	const [commitMsg] = args;
+
+	// console.log(commitMsg, args[0], commitMsg.length);
+
+	if (typeof commitMsg !== 'string' || commitMsg.length < 1) {
+		log(chalk.red('You must provide a commit message!'));
+		process.exit(1);
+	}
+
 	const pkg = getPkg();
 
 	const deps = pkg.data.robonautDeps;
@@ -897,17 +911,16 @@ const distribute = commitMsg => {
 
 	const pretify = cmdAry => {
 		const [cmd, args] = cmdAry;
-		return ` ${cmd} ${args.join(' ')} `;
+		return `${cmd} ${args.join(' ')}`;
 	};
 
 	function spawn (nextCmd) {
-		const prettyCmd = chalk.bgBlack.yellow.underline(pretify(nextCmd));
-		console.log(prettyCmd + '\n');
+		const prettyCmd = pretify(nextCmd);
+		const prettyCmdColor = chalk.bgBlack.yellow(' ' + chalk.underline(prettyCmd) + ' ');
+		console.log(prettyCmdColor + '\n');
 
 		return new Promise((resolve, reject) => {
 			const [cmd, args, opts] = nextCmd;
-
-			// console.log(cmd, args, opts);
 
 			let stdout = '';
 			let stderr = '';
@@ -933,6 +946,7 @@ const distribute = commitMsg => {
 
 			// if (hasStd('err', child)) {
 				// child.stderr.on('data', data => {
+				// 	progressUpdate(data);
 				// 	stderr += data;
 				// });
 			// }
@@ -945,35 +959,24 @@ const distribute = commitMsg => {
 			// }
 
 			child.on('error', err => {
-				console.log('ERROR');
-				console.error(err);
-				end();
+				end(1);
 			});
 
 			child.on('close', code => {
-				console.log('CLOSE');
-				console.log(code);
 				end(code);
 			});
 
 			child.on('exit', code => {
-				console.log('CLOSE');
-				console.log(code);
 				end(code);
 			});
 		});
 	};
 
 	const defaultOpts = {
-		// timeout: 30,
-		// encoding: 'utf8',
-		// maxBuffer: 1024 * 1024,
-		// stdio: ['ignore', 1, 2],
-		stdio: 'ignore'
-		// stdio: 'inherit'
+		stdio: 'inherit'
 	};
 
-	scan(true).then(changeStack => {
+	scan([true]).then(changeStack => {
 		// console.log(changeStack);
 
 		changeStack.forEach(name => {
@@ -996,46 +999,22 @@ const distribute = commitMsg => {
 			const gitPush = ['git', ['push', 'origin', branch, '-v'], opts];
 			cmdStack.push(gitPush);
 
-			const npmPublish = ['npm', ['publish', '--loglevel verbose'], opts];
+			const npmPublish = ['npm', ['publish'], opts];
 			cmdStack.push(npmPublish);
 		});
 
 		// console.log(cmdStack);
 
 		spawnNext(cmdStack).then(results => {
-			console.log('______________________________________________________');
-			console.log('Success');
-			console.log(results);
+			log('Pushed & Published!');
+			// console.log('Success');
+			// console.log(results);
 			// console.log(results.join('\n'));
 		}).catch(err => {
-			console.log('Error');
+			log('Error Pushing & Publishing');
 			console.error(err);
-			console.log(resultStack);
+			console.log(resultStack.join('\n'));
 		});
-	});
-};
-
-const getCommitMsg = () => new Promise((resolve, reject) => {
-	resolve(new Date());
-	// const realTerm = term.createTerminal();
-	// realTerm.yellow('Commit message: ');
-
-	// realTerm.inputField((error, msg) => {
-	// 	if (error) {
-	// 		reject(error);
-	// 	}
-
-	// 	realTerm.processExit();
-	// 	resolve(msg);
-	// });
-});
-
-const transmit = () => {
-	getCommitMsg().then(msg => {
-		distribute(msg);
-	})
-	.catch(err => {
-		throw err;
 	});
 };
 
@@ -1086,8 +1065,6 @@ const stackCmds = args => {
 };
 
 const processCmds = cmds => {
-	log('Process Cmds');
-
 	let validCmds = 0;
 
 	for (let cmd of cmds) {
@@ -1095,8 +1072,7 @@ const processCmds = cmds => {
 
 		if (Reflect.has(main, cmdName)) {
 			validCmds += 1;
-			// main[cmdName](cmd);
-			main[cmdName]();
+			main[cmdName](cmd);
 		}
 	}
 
@@ -1106,8 +1082,6 @@ const processCmds = cmds => {
 };
 
 const begin = args => {
-	log('Begin');
-
 	// Remove the first 2 args [path, script]
 	args.shift();
 	args.shift();
