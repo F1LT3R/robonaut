@@ -1,8 +1,8 @@
 {
   "pkg": {
     "name": "robonaut",
-    "version": "1.0.0-alpha",
-    "description": "A monorepo manager for NPM+Git libraries.",
+    "version": "1.1.0-alpha",
+    "description": "A mono-(poly)-repo manager for NPM+Git libraries.",
     "preferGlobal": true,
     "main": "robonaut.js",
     "bin": {
