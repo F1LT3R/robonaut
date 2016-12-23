@@ -945,15 +945,20 @@ const distribute = commitMsg => {
 			// }
 
 			child.on('error', err => {
+				console.log('ERROR');
 				console.error(err);
 				end();
 			});
 
 			child.on('close', code => {
+				console.log('CLOSE');
+				console.log(code);
 				end(code);
 			});
 
 			child.on('exit', code => {
+				console.log('CLOSE');
+				console.log(code);
 				end(code);
 			});
 		});
@@ -964,8 +969,8 @@ const distribute = commitMsg => {
 		// encoding: 'utf8',
 		// maxBuffer: 1024 * 1024,
 		// stdio: ['ignore', 1, 2],
-		// stdio: 'ignore'
-		stdio: 'inherit'
+		stdio: 'ignore'
+		// stdio: 'inherit'
 	};
 
 	scan(true).then(changeStack => {
@@ -991,8 +996,8 @@ const distribute = commitMsg => {
 			const gitPush = ['git', ['push', 'origin', branch, '-v'], opts];
 			cmdStack.push(gitPush);
 
-			// const npmPublish = ['npm', ['publish', '--loglevel verbose'], opts];
-			// cmdStack.push(npmPublish);
+			const npmPublish = ['npm', ['publish', '--loglevel verbose'], opts];
+			cmdStack.push(npmPublish);
 		});
 
 		// console.log(cmdStack);
@@ -1011,17 +1016,18 @@ const distribute = commitMsg => {
 };
 
 const getCommitMsg = () => new Promise((resolve, reject) => {
-	const realTerm = term.createTerminal();
-	realTerm.yellow('Commit message: ');
+	resolve(new Date());
+	// const realTerm = term.createTerminal();
+	// realTerm.yellow('Commit message: ');
 
-	realTerm.inputField((error, msg) => {
-		if (error) {
-			reject(error);
-		}
+	// realTerm.inputField((error, msg) => {
+	// 	if (error) {
+	// 		reject(error);
+	// 	}
 
-		realTerm.processExit();
-		resolve(msg);
-	});
+	// 	realTerm.processExit();
+	// 	resolve(msg);
+	// });
 });
 
 const transmit = () => {
