@@ -8,7 +8,7 @@ Demo: [Youtube](https://www.youtube.com/watch?v=IfnSDgQjTVw)
 
 Warning: Robot is packed full of religious convictions that other developers may strongly disagree with.
 
-Robonaut was haked together in 3 days, and is undoubtedly very brittle. It was designed to work with one open-source project ([markserv](https://github.com/markserv)). It is a very early tool that will likely nature alongside the code it is supporting.
+Robonaut was haked together in 3 days, and is undoubtedly very brittle. It was designed to work with one open-source project ([markserv](https://github.com/markserv)). It is a very early tool that will likely mature alongside the code it is supporting.
 
 ## About
 
