@@ -18,6 +18,7 @@ main.assemble = require('./lib/assemble')(settings, log, file, spawn);
 main.disassemble = require('./lib/disassemble')(settings, log, file, spawn);
 main.current = require('./lib/current')(settings, log, file);
 main.sync = require('./lib/sync')(settings, log, file, spawn, main);
+main.fuse = require('./lib/fuse')(settings, log, file, spawn, main);
 
 const core = require('./lib/core')(settings, log, file, spawn, main);
 
