@@ -1,50 +1,100 @@
 {
 	"dependencies": {},
-	"commands": {
+  "commands": {
     "assemble": [
-	    {
-    		"command": "git",
-        "args": ["clone", "{{repository}}", "-v"],
-      	"options": {"cwd": "{{robonaut}}"}
-	    },
-
-	    {
-	    	"command": "npm",
-	    	"args": ["install"],
-        "options": {"cwd": "{{robonaut}}{{dependency}}"}
-	    }
-	  ],
+      {
+        "command": "git",
+        "args": [
+          "clone",
+          "{{repository}}",
+          "-v"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}"
+        }
+      },
+      {
+        "command": "npm",
+        "args": [
+          "install"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
+      }
+    ],
 
     "disassemble": [
       {
         "command": "rm",
-        "args": ["clone", "{{robonaut}}{{dependency}}", "-rf"],
-        "options": {"cwd": "{{robonaut}}"}
+        "args": ["-rf", "{{robonaut}}{{dependency}}"],
+        "options": {
+          "cwd": "{{robonaut}}"
+        }
       }
     ],
 
-		"scan": [
-			{
-				"git": ["diff", "--word-diff=color", "--color=always", "-U1", "--ws-error-highlight=new,old"]
-			}
+    "scan": [
+      {
+        "git": [
+          "diff",
+          "--word-diff=color",
+          "--color=always",
+          "-U1",
+          "--ws-error-highlight=new,old"
+        ]
+      }
+    ],
+
+    "fuse": {
+        "link-out": [
+	      	{
+		        "command": "npm",
+		        "args": ["link"],
+		        "options": {
+		          "cwd": "{{robonaut}}{{dependency}}"
+		        }
+		    }
 		],
+        "link-in": [
+	      	{
+		        "command": "npm",
+		        "args": ["link", "{{dependency}}"],
+		        "options": {
+		          "cwd": "{{robonaut}}{{linkInside}}"
+		        }
+		    }
+      	]
+    },
 
-		"transmit": [
-			{
-				"git": ["add", "-A", "-v"]
-			},
-
-			{
-				"git": ["commit", "-m", "\"{{commitMessage}}\"", "-v"]
-			},
-
-			{
-				"git": ["push", "origin", "{{branch}}"]
-			},
-
-			{
-				"npm": [ "publish"]
-			}
-		]
-	}
+    "transmit": [
+      {
+        "git": [
+          "add",
+          "-A",
+          "-v"
+        ]
+      },
+      {
+        "git": [
+          "commit",
+          "-m",
+          "\"{{commitMessage}}\"",
+          "-v"
+        ]
+      },
+      {
+        "git": [
+          "push",
+          "origin",
+          "{{branch}}"
+        ]
+      },
+      {
+        "npm": [
+          "publish"
+        ]
+      }
+    ]
+  }
 }
