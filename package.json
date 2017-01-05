@@ -44,7 +44,7 @@
     "git-rev-sync": "^1.8.0",
     "jsonfile": "^2.4.0",
     "lodash": "^4.17.3",
-    "merge-array-object": "^1.0.3",
+    "merge-array-object": "^1.0.4",
     "package-json": "^2.4.0",
     "pinch": "^0.1.3",
     "promise-charm": "^1.0.0-alpha",
