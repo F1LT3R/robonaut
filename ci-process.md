@@ -39,7 +39,6 @@ Normal dev work. Make changes inside multiple repos.
 	+ Npm install (per repo)
 	+ Npm test (per repo)
 
-
 ## Publishing
 
 - [ ] Current
@@ -68,8 +67,6 @@ Normal dev work. Make changes inside multiple repos.
 		+ [ ] git push each repo's branch
 		+ [ ] npm publish each repo
 		+ [ ] switch back to master and pull on each branch
-
-
 
 
 
