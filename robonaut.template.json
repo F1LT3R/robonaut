@@ -54,8 +54,8 @@
 		        "options": {
 		          "cwd": "{{robonaut}}{{dependency}}"
 		        }
-		    }
-		],
+			    }
+				],
         "link-in": [
 	      	{
 		        "command": "npm",
@@ -67,6 +67,54 @@
       	]
     },
 
+    "switch": {
+      	"checkout-local": [
+      		{
+		        "command": "git",
+		        "args": [
+		        	"checkout",
+		        	"{{branch}}"
+						],
+		        "options": {
+		          "cwd": "{{robonaut}}{{dependency}}"
+		        }
+	        }
+	  	],
+    	"checkout-remote": [
+        {
+        	"command": "git",
+	        "args": [
+	        	"pull",
+					],
+	        "options": {
+	          "cwd": "{{robonaut}}{{dependency}}"
+	        }
+		    },
+        {
+        	"command": "git",
+	        "args": [
+	        	"checkout",
+	        	"{{branch}}"
+					],
+	        "options": {
+	          "cwd": "{{robonaut}}{{dependency}}"
+	        }
+		    }
+	  	],
+    	"checkout-b": [
+        {
+        	"command": "git",
+	        "args": [
+	        	"checkout",
+	        	"-b",
+	        	"{{branch}}"
+					],
+	        "options": {
+	          "cwd": "{{robonaut}}{{dependency}}"
+	        }
+		    }
+	  	]
+    },
     "scan": [
       {
         "command": "git",

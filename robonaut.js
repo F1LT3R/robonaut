@@ -21,6 +21,7 @@ main.current = require('./lib/current')(settings, log, file);
 main.sync = require('./lib/sync')(settings, log, file, spawn, main);
 main.fuse = require('./lib/fuse')(settings, log, file, spawn, main, helpers);
 main.scan = require('./lib/scan')(settings, log, file, spawn);
+main.switch = require('./lib/switch')(settings, log, file, spawn);
 
 const core = require('./lib/core')(settings, log, file, spawn, main);
 
