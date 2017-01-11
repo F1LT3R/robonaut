@@ -88,11 +88,10 @@
         }
       },
       {
-        "command": "git",
+        "command": "sh",
         "args": [
-          "checkout",
-          "$(git show-ref --verify --quiet refs/heads/{{branch}} || echo '-b')",
-          "{{branch}}"
+        	"-c",
+        	"git checkout $(git show-ref --verify --quiet refs/heads/{{branch}} || echo '-b') {{branch}}"
         ],
         "options": {
           "cwd": "{{robonaut}}{{dependency}}"
