@@ -1,5 +1,5 @@
 {
-	"dependencies": {},
+  "dependencies": {},
   "commands": {
     "assemble": [
       {
@@ -23,115 +23,82 @@
         }
       }
     ],
-
     "disassemble": [
       {
         "command": "rm",
-        "args": ["-rf", "{{robonaut}}{{dependency}}"],
+        "args": [
+          "-rf",
+          "{{robonaut}}{{dependency}}"
+        ],
         "options": {
           "cwd": "{{robonaut}}"
         }
       }
     ],
-
     "scan": [
       {
-        "git": [
+        "command": "git",
+        "args": [
+          "--no-pager",
           "diff",
           "--word-diff=color",
           "--color=always",
           "-U1",
           "--ws-error-highlight=new,old"
-        ]
-      }
-    ],
-
-    "fuse": {
-        "link-out": [
-	      	{
-		        "command": "npm",
-		        "args": ["link"],
-		        "options": {
-		          "cwd": "{{robonaut}}{{dependency}}"
-		        }
-			    }
-				],
-        "link-in": [
-	      	{
-		        "command": "npm",
-		        "args": ["link", "{{dependency}}"],
-		        "options": {
-		          "cwd": "{{robonaut}}{{linkInside}}"
-		        }
-		    }
-      	]
-    },
-
-    "switch": {
-      	"checkout-local": [
-      		{
-		        "command": "git",
-		        "args": [
-		        	"checkout",
-		        	"{{branch}}"
-						],
-		        "options": {
-		          "cwd": "{{robonaut}}{{dependency}}"
-		        }
-	        }
-	  	],
-    	"checkout-remote": [
-        {
-        	"command": "git",
-	        "args": [
-	        	"pull",
-					],
-	        "options": {
-	          "cwd": "{{robonaut}}{{dependency}}"
-	        }
-		    },
-        {
-        	"command": "git",
-	        "args": [
-	        	"checkout",
-	        	"{{branch}}"
-					],
-	        "options": {
-	          "cwd": "{{robonaut}}{{dependency}}"
-	        }
-		    }
-	  	],
-    	"checkout-b": [
-        {
-        	"command": "git",
-	        "args": [
-	        	"checkout",
-	        	"-b",
-	        	"{{branch}}"
-					],
-	        "options": {
-	          "cwd": "{{robonaut}}{{dependency}}"
-	        }
-		    }
-	  	]
-    },
-    "scan": [
-      {
-        "command": "git",
-        "args": [
-        	"--no-pager",
-        	"diff",
-			"--word-diff=color",
-			"--color=always",
-			"-U1",
-			"--ws-error-highlight=new,old"
-		],
+        ],
         "options": {
           "cwd": "{{robonaut}}{{dependency}}"
         }
       }
     ],
-
+    "fuse": {
+      "link-out": [
+        {
+          "command": "npm",
+          "args": [
+            "link"
+          ],
+          "options": {
+            "cwd": "{{robonaut}}{{dependency}}"
+          }
+        }
+      ],
+      "link-in": [
+        {
+          "command": "npm",
+          "args": [
+            "link",
+            "{{dependency}}"
+          ],
+          "options": {
+            "cwd": "{{robonaut}}{{linkInside}}"
+          }
+        }
+      ]
+    },
+    "switch": [
+      {
+        "command": "git",
+        "args": [
+          "fetch",
+          "--all"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
+      },
+      {
+        "command": "git",
+        "args": [
+          "checkout",
+          "$(git show-ref --verify --quiet refs/heads/{{branch}} || echo '-b')",
+          "{{branch}}"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
+      }
+    ],
     "transmit": [
       {
         "git": [
