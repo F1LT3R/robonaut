@@ -44,13 +44,13 @@ Normal dev work. Make changes inside multiple repos.
 ## Publishing
 
 - [ ] Current
-	- [x] Check all git repos have latests
+	- [ ] Check all git repos have latest
 	- [ ] Check all npm verions numbers are current
 
 - [ ] Numerate
-	+ [x] [current or exit]
-	+ [x] Increment version numbers of all changed repos
-	+ [x] Copy master-dependency `package.json` version to monorepo `package.json`
+	+ [ ] [current or exit]
+	+ [ ] Increment version numbers of all changed repos
+	+ [ ] Copy master-dependency `package.json`.version to monorepo `package.json`.version.
 
 - [ ] Transmit
 	+ [ ] [current or exit]
