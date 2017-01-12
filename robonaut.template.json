@@ -98,6 +98,17 @@
         }
       }
     ],
+		"test": [
+      {
+        "command": "npm",
+        "args": [
+          "test"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
+      }
+    ],
     "transmit": [
       {
         "git": [

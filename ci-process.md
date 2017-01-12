@@ -16,16 +16,10 @@
 	+ Resolve peer-dependency tree
 	+ NPM link relevant dependencies
 
-- [ ] Switch
-	+ [name]
-		+ git checkout [name]
-		+ [if no branch exists by name]
-			+ git pull
-			+ git checkout [name]
-			+ [if no branch exists on origin by name]
-				+ git checkout -b [name] (Create a working branch inside each repo)
-		+ [else]
-			+ git checkout -b [name] (Create a working branch inside each repo)
+- [x] Switch
+	+ [x] git fetch -all (stay up to date)
+	+ [x] git checkout [name]
+	+ [x] [if not exists] git checkout -b [name]
 
 ## Dev Work
 
