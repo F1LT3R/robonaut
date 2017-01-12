@@ -110,6 +110,30 @@
         }
       }
     ],
+    "current": [
+      {
+        "command": "git",
+        "args": [
+          "remote",
+          "update"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}",
+          "stdio": "pipe"
+        }
+      },
+      {
+        "command": "sh",
+        "args": [
+          "-c",
+          "git --no-pager log --ignore-missing HEAD..origin/{{branch}} --oneline --color"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}",
+          "stdio": "pipe"
+        }
+      }
+    ],
 		"test": [
       {
         "command": "npm",
