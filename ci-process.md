@@ -33,7 +33,7 @@ Normal dev work. Make changes inside multiple repos.
 
 ## Testing
 
-- [ ] Test
+- [X] Test
 	+ Npm test in each repo
 
 - [ ] Rebuild

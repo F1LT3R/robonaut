@@ -39,6 +39,17 @@
       {
         "command": "git",
         "args": [
+          "status",
+          "-s"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}{{dependency}}",
+          "stdio": "pipe"
+        }
+      },
+      {
+        "command": "git",
+        "args": [
           "--no-pager",
           "diff",
           "--word-diff=color",
@@ -47,7 +58,8 @@
           "--ws-error-highlight=new,old"
         ],
         "options": {
-          "cwd": "{{robonaut}}{{dependency}}"
+          "cwd": "{{robonaut}}{{dependency}}",
+          "stdio": "pipe"
         }
       }
     ],
