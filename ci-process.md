@@ -1,12 +1,12 @@
 ## Setup
 
-- [ ] Embed
+- [-] Embed
 	+ [x] Resolve Github Repos urls, commits, branches to to dependency array in robonaut.json
 	+ [x] Add npm-package/github repo info to `robotnaut.json`
-	+ [ ] First dep added is assumed to be main-depdency
+	+ [ ] First dep added is assumed to be main-depdency (punt)
 
-- [ ] Main
-	+ Set main dependency in robonaut.json
+- [ ] Main (punt)
+	+ [ ] set main dependency in robonaut.json (punt)
 
 - [x] Assemble
 	+ [x] Git clone each Repo from Github into robonaut modules dir
@@ -36,7 +36,7 @@ Normal dev work. Make changes inside multiple repos.
 - [X] Test
 	+ Npm test in each repo
 
-- [ ] Rebuild
+- [-] Rebuild (punt)
 	+ Npm uninstall (per repo)
 	+ Npm install (per repo)
 	+ Npm test (per repo)
@@ -52,10 +52,10 @@ Normal dev work. Make changes inside multiple repos.
 	- [x] Check all git repos have latest
 	- [x] Check all npm verions numbers are current
 
-- [ ] Numerate
+- [x] Numerate
 	+ [ ] [current or exit]
-	+ [ ] Increment version numbers of all changed repos
-	+ [ ] Copy master-dependency `package.json`.version to monorepo `package.json`.version.
+	+ [x] Increment version numbers of all changed repos and save to robonaut.json
+	+ [-] Copy master-dependency `package.json`.version to monorepo `package.json`.version. (punt)
 
 - [ ] Transmit
 	+ [ ] [current or exit]
