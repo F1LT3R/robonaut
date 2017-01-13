@@ -41,11 +41,15 @@ Normal dev work. Make changes inside multiple repos.
 	+ Npm install (per repo)
 	+ Npm test (per repo)
 
+- [ ] Sync
+	- [x] get outdated list (current)
+	- [x] synchronise
+
 ## Publishing
 
-- [ ] Current
-	- [ ] Check all git repos have latest
-	- [ ] Check all npm verions numbers are current
+- [x] Current
+	- [x] Check all git repos have latest
+	- [x] Check all npm verions numbers are current
 
 - [ ] Numerate
 	+ [ ] [current or exit]
