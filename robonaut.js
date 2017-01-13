@@ -25,6 +25,7 @@ main.switch = require('./lib/switch')(settings, log, file, spawn);
 main.test = require('./lib/test')(settings, log, file, spawn);
 main.numerate = require('./lib/numerate')(settings, log, file, spawn, main, helpers);
 main.transmit = require('./lib/transmit')(settings, log, file, spawn, main, helpers);
+main.publish = require('./lib/publish')(settings, log, file, spawn, main, helpers);
 
 const core = require('./lib/core')(settings, log, file, spawn, main);
 
