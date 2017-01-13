@@ -1,6 +1,6 @@
 {
   "name": "robonaut",
-  "version": "2.1.0-alpha.0",
+  "version": "2.1.1-alpha.0",
   "description": "A mono-(poly)-repo manager for NPM+Git libraries.",
   "preferGlobal": true,
   "main": "robonaut.js",
