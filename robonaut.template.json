@@ -147,31 +147,38 @@
     ],
     "transmit": [
       {
-        "git": [
+      	"command": "git",
+      	"args": [
           "add",
           "-A",
           "-v"
-        ]
+        ],
+		    "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
       },
       {
-        "git": [
+        "command": "git",
+        "args": [
           "commit",
           "-m",
           "\"{{commitMessage}}\"",
           "-v"
-        ]
+        ],
+		    "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
       },
       {
-        "git": [
+      	"command": "git",
+      	"args": [
           "push",
           "origin",
           "{{branch}}"
-        ]
-      },
-      {
-        "npm": [
-          "publish"
-        ]
+        ],
+		    "options": {
+          "cwd": "{{robonaut}}{{dependency}}"
+        }
       }
     ]
   }

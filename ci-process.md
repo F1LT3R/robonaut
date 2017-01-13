@@ -53,7 +53,7 @@ Normal dev work. Make changes inside multiple repos.
 	- [x] Check all npm verions numbers are current
 
 - [x] Numerate
-	+ [ ] [current or exit]
+	+ [x] [current or exit]
 	+ [x] Increment version numbers of all changed repos and save to robonaut.json
 	+ [-] Copy master-dependency `package.json`.version to monorepo `package.json`.version. (punt)
 
