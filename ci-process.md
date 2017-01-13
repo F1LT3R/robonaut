@@ -41,9 +41,10 @@ Normal dev work. Make changes inside multiple repos.
 	+ Npm install (per repo)
 	+ Npm test (per repo)
 
-- [ ] Sync
+- [X] Sync
 	- [x] get outdated list (current)
-	- [x] synchronise
+	- [x] synchronise git (pull remote branch if newer changes)
+	- [x] sync npm (pull master, if the ver is updated, it has made it to master)
 
 ## Publishing
 
