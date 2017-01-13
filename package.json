@@ -32,7 +32,6 @@
   },
   "homepage": "https://github.com/f1lt3r/robotnaut#readme",
   "devDependencies": {
-    "chalk": "^1.1.3",
     "xo": "^0.17.1"
   },
   "dependencies": {
