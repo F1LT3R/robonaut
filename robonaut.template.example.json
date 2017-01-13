@@ -1,0 +1,94 @@
+{
+	"dependencies": {
+		"markserv-cli": {
+			"repo": "git@github.com:markserv/markserv.git",
+			"branch": "master",
+			"commit": null
+		}
+	},
+	"commands": {
+    "assemble": [
+	    {
+    		"command": "git",
+        "args": [
+          "clone",
+          "{{repository}}",
+          "-v"
+        ],
+      	"options": {
+        	"cwd": "{{robonaut}}"
+        }
+	    },
+
+	    {
+	    	"command": "npm",
+	    	"args": [
+          "install"
+        ],
+        "options": {
+        	"cwd": "{{robonaut}}{{dependency}}"
+        }
+	    }
+	  ],
+
+    "disassemble": [
+      {
+        "command": "rm",
+        "args": [
+          "clone",
+          "{{robonaut}}{{dependency}}",
+          "-rf"
+        ],
+        "options": {
+          "cwd": "{{robonaut}}"
+        }
+      }
+    ],
+
+
+		"scan": [
+			{
+				"git": [
+					"diff",
+					"--word-diff=color",
+					"--color=always",
+					"-U1",
+					"--ws-error-highlight=new,old"
+				]
+			}
+		],
+
+		"transmit": [
+			{
+				"git": [
+					"add",
+					"-A",
+					"-v"
+				]
+			},
+
+			{
+				"git": [
+					"commit",
+					"-m",
+					"\"{{commitMessage}}\"",
+					"-v"
+				]
+			},
+
+			{
+				"git": [
+					"push",
+					"origin",
+					"{{branch}}"
+				]
+			},
+
+			{
+				"npm": [
+					"publish"
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "robonaut test"
+  },
+  "keywords": [
+    "robonaut",
+    "monorepo"
+  ],
+  "dependencies": {
+    "robonaut": "^3.4.6"
+  }
+}
