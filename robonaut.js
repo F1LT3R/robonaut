@@ -23,7 +23,7 @@ main.fuse = require('./lib/fuse')(settings, log, file, spawn, main, helpers);
 main.scan = require('./lib/scan')(settings, log, file, spawn);
 main.switch = require('./lib/switch')(settings, log, file, spawn);
 main.test = require('./lib/test')(settings, log, file, spawn);
-main.numerate = require('./lib/numerate')(settings, log, file, spawn, main, helpers);
+main.numerate = require('./lib/numerate')(settings, log, main.file, spawn, main, helpers);
 main.transmit = require('./lib/transmit')(settings, log, file, spawn, main, helpers);
 main.publish = require('./lib/publish')(settings, log, file, spawn, main, helpers);
 

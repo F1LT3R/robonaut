@@ -1,28 +1,31 @@
 {
   "dependencies": {},
   "commands": {
-    "assemble": [
-      {
-        "command": "git",
-        "args": [
-          "clone",
-          "{{repository}}",
-          "-v"
-        ],
-        "options": {
-          "cwd": "{{robonaut}}"
+    "assemble": {
+      "description" : "Clone GIT repositories and run NPM install in each.",
+      "commands": [
+        {
+          "command": "git",
+          "args": [
+            "clone",
+            "{{repository}}",
+            "-v"
+          ],
+          "options": {
+            "cwd": "{{robonaut}}"
+          }
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "options": {
+            "cwd": "{{robonaut}}{{dependency}}"
+          }
         }
-      },
-      {
-        "command": "npm",
-        "args": [
-          "install"
-        ],
-        "options": {
-          "cwd": "{{robonaut}}{{dependency}}"
-        }
-      }
-    ],
+      ]
+    },
     "disassemble": [
       {
         "command": "rm",
